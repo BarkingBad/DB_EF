@@ -16,11 +16,6 @@ namespace EFHomework.Controllers
     {
         private EFHomeworkContext db = new EFHomeworkContext();
 
-        // GET: api/Customers
-        public IQueryable<Customer> GetCustomers()
-        {
-            return db.Customers;
-        }
 
         // GET: api/Customers/5
         [ResponseType(typeof(Customer))]
@@ -33,41 +28,6 @@ namespace EFHomework.Controllers
             }
 
             return Ok(customer);
-        }
-
-        // PUT: api/Customers/5
-        [ResponseType(typeof(void))]
-        public IHttpActionResult PutCustomer(string id, Customer customer)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != customer.CompanyName)
-            {
-                return BadRequest();
-            }
-
-            db.Entry(customer).State = EntityState.Modified;
-
-            try
-            {
-                db.SaveChanges();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CustomerExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return StatusCode(HttpStatusCode.NoContent);
         }
 
         // POST: api/Customers
@@ -98,31 +58,6 @@ namespace EFHomework.Controllers
             }
 
             return CreatedAtRoute("DefaultApi", new { id = customer.CompanyName }, customer);
-        }
-
-        // DELETE: api/Customers/5
-        [ResponseType(typeof(Customer))]
-        public IHttpActionResult DeleteCustomer(string id)
-        {
-            Customer customer = db.Customers.Find(id);
-            if (customer == null)
-            {
-                return NotFound();
-            }
-
-            db.Customers.Remove(customer);
-            db.SaveChanges();
-
-            return Ok(customer);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
         }
 
         private bool CustomerExists(string id)

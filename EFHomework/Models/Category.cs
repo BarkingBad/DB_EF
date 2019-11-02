@@ -10,6 +10,6 @@ namespace EFHomework.Models
 		public int CategoryID { get; set; }
 		public string Name { get; set; }
 		public string Description { get; set; }
-		public ICollection<Product> Products { get; set; }
+		public virtual ICollection<Product> Products { get; set; }
 	}
 }

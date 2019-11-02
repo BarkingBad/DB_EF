@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Description;
+using EFHomework.DTOs;
 using EFHomework.Models;
 
 namespace EFHomework.Controllers
@@ -17,77 +18,58 @@ namespace EFHomework.Controllers
         private EFHomeworkContext db = new EFHomeworkContext();
 
         // GET: api/Orders
-        public IQueryable<Order> GetOrders()
+        public IQueryable<OrderDTO> GetOrderDTOs()
         {
-            return db.Orders;
-        }
+			return from order in db.Orders
+				   select new OrderDTO()
+				   {
+					   OrderID = order.OrderID,
+					   CustomerName = order.CustomerName,
+					   ProductID = order.ProductID,
+					   ProductName = order.Product.Name,
+					   Quantity = order.Quantity
+				   };
 
-        // GET: api/Orders/5
-        [ResponseType(typeof(Order))]
-        public IHttpActionResult GetOrder(int id)
-        {
-            Order order = db.Orders.Find(id);
-            if (order == null)
-            {
-                return NotFound();
-            }
+		}
 
-            return Ok(order);
-        }
 
-        // PUT: api/Orders/5
-        [ResponseType(typeof(void))]
-        public IHttpActionResult PutOrder(int id, Order order)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+		[Route("api/Orders/GetOrdersForCustomer/{name}")]
+		public IHttpActionResult GetOrdersForCustomer(string name)
+		{
+			return Ok(db.Orders.Where(o => o.CustomerName == name).Select(order => new OrderDTO()
+			{
+				OrderID = order.OrderID,
+				CustomerName = order.CustomerName,
+				ProductID = order.ProductID,
+				ProductName = order.Product.Name,
+				Quantity = order.Quantity
+			}).ToList());
+		}
 
-            if (id != order.OrderID)
-            {
-                return BadRequest();
-            }
-
-            db.Entry(order).State = EntityState.Modified;
-
-            try
-            {
-                db.SaveChanges();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!OrderExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return StatusCode(HttpStatusCode.NoContent);
-        }
 
         // POST: api/Orders
-        [ResponseType(typeof(Order))]
-        public IHttpActionResult PostOrder(Order order)
+        public IHttpActionResult PostOrderDTO(OrderDTO orderDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+
+			var order = new Order
+			{
+				CustomerName = orderDto.CustomerName,
+				ProductID = orderDto.ProductID,
+				Quantity = orderDto.Quantity
+			};
 
             db.Orders.Add(order);
             db.SaveChanges();
 
-            return CreatedAtRoute("DefaultApi", new { id = order.OrderID }, order);
+            return Ok();
         }
 
         // DELETE: api/Orders/5
-        [ResponseType(typeof(Order))]
-        public IHttpActionResult DeleteOrder(int id)
+        public IHttpActionResult DeleteOrderDTO(int id)
         {
             Order order = db.Orders.Find(id);
             if (order == null)
@@ -99,20 +81,6 @@ namespace EFHomework.Controllers
             db.SaveChanges();
 
             return Ok(order);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
-        private bool OrderExists(int id)
-        {
-            return db.Orders.Count(e => e.OrderID == id) > 0;
         }
     }
 }

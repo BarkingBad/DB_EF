@@ -12,6 +12,6 @@ namespace EFHomework.Models
 		public string CompanyName { get; set; }
 		public string Description { get; set; }
 
-		public ICollection<Order> Orders { get; set; }
+		public virtual ICollection<Order> Orders { get; set; }
 	}
 }
