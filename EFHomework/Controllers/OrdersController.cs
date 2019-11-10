@@ -54,8 +54,12 @@ namespace EFHomework.Controllers
             {
                 return BadRequest(ModelState);
             }
-
-			var order = new Order
+            var product = db.Products.SingleOrDefault(p => p.ProductID == orderDto.ProductID);
+            if (orderDto.Quantity > product.UnitsInStock)
+            {
+                return new System.Web.Http.Results.ResponseMessageResult(Request.CreateResponse(HttpStatusCode.NotAcceptable));
+            }
+            var order = new Order
 			{
 				CustomerName = orderDto.CustomerName,
 				ProductID = orderDto.ProductID,
@@ -63,6 +67,7 @@ namespace EFHomework.Controllers
 			};
 
             db.Orders.Add(order);
+            product.UnitsInStock -= orderDto.Quantity;
             db.SaveChanges();
 
             return Ok();
@@ -76,7 +81,8 @@ namespace EFHomework.Controllers
             {
                 return NotFound();
             }
-
+            Product product = db.Products.Find(order.ProductID);
+            product.UnitsInStock += order.Quantity;
             db.Orders.Remove(order);
             db.SaveChanges();
 
